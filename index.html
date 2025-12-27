@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Nitisha | A Birthday Journey</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #E2C799; /* Champagne Gold */
+            --accent-glow: rgba(226, 199, 153, 0.2);
+            --text-main: #FFFFFF;
+            --text-dim: #999999;
+            --font-serif: 'Playfair Display', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            width: 20px; height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        #cursor-follower {
+            width: 40px; height: 40px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s ease;
+        }
+
+        /* Noise Texture Overlay */
+        .noise {
+            position: fixed; inset: 0;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04; pointer-events: none; z-index: 999;
+        }
+
+        /* Loader/Gate */
+        #loader {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 2000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center;
+        }
+
+        .enter-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 1.5rem 3rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            margin-top: 2rem;
+        }
+
+        .enter-btn:hover {
+            background: var(--accent);
+            color: black;
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+        section {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Hero */
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: clamp(3rem, 15vw, 10rem);
+            font-weight: 900;
+            line-height: 0.85;
+            margin-bottom: 2rem;
+            opacity: 0;
+        }
+
+        .hero-title span { color: var(--accent); }
+
+        /* Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 250px;
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .bento-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 2.5rem;
+            display: flex; flex-direction: column;
+            justify-content: flex-end;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s ease;
+        }
+
+        .bento-item:hover { border-color: var(--accent); }
+        .bento-item h3 { font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .bento-item p { color: var(--text-dim); font-size: 0.9rem; }
+        .span-2 { grid-column: span 2; }
+        .row-2 { grid-row: span 2; }
+
+        /* Choice Section */
+        .choice-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+        }
+
+        .choice-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 2rem;
+            border-radius: 24px;
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--accent);
+            background: rgba(226, 199, 153, 0.05);
+            transform: translateY(-10px);
+        }
+
+        .choice-btn i { color: var(--accent); margin-bottom: 1rem; }
+
+        /* Heartfelt Modal */
+        #message-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 3000;
+            display: none;
+            justify-content: center; align-items: center;
+            padding: 2rem;
+        }
+
+        .message-content {
+            max-width: 600px;
+            text-align: center;
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            line-height: 1.4;
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .bento-grid { grid-template-columns: 1fr 1fr; }
+            .span-2 { grid-column: span 2; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <div id="cursor-follower"></div>
+    <div class="noise"></div>
+
+    <!-- Entrance Screen -->
+    <div id="loader">
+        <h2 style="font-family: var(--font-serif); font-size: 2rem; color: var(--accent);">Happy Birthday, Nitisha.</h2>
+        <p style="color: var(--text-dim); margin-top: 10px;">A special digital experience created just for you.</p>
+        <button class="enter-btn" onclick="startExperience()">Unlock the day</button>
+    </div>
+
+    <!-- Message Overlay -->
+    <div id="message-overlay" onclick="this.style.display='none'">
+        <div class="message-content" id="modal-text"></div>
+    </div>
+
+    <main id="content" class="container" style="opacity: 0;">
+        <!-- Hero Section -->
+        <section>
+            <p style="letter-spacing: 5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 1rem;">Chapter 01</p>
+            <h1 class="hero-title" id="main-title">HAPPY<br>BIRTHDAY<br><span>NITISHA</span></h1>
+            <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-dim);">
+                <div style="width: 50px; height: 1px; background: var(--accent);"></div>
+                <p>Scroll to begin your journey</p>
+            </div>
+        </section>
+
+        <!-- The Bento Grid (Nitisha's Traits) -->
+        <section id="nitisha-highlights">
+            <h2 style="font-family: var(--font-serif); font-size: 3rem; margin-bottom: 3rem;">The Essence of You</h2>
+            <div class="bento-grid">
+                <div class="bento-item span-2 row-2" style="background: linear-gradient(45deg, rgba(226,199,153,0.1), transparent);">
+                    <i data-lucide="sparkles"></i>
+                    <h3>Radiant Energy</h3>
+                    <p>Nitisha, you have this rare ability to walk into a room and immediately make it feel warmer. Your presence is the definition of magnetic.</p>
+                </div>
+                <div class="bento-item">
+                    <i data-lucide="heart"></i>
+                    <h3>The Bestie</h3>
+                    <p>The kind of friend who listens not just to words, but to the silence between them.</p>
+                </div>
+                <div class="bento-item">
+                    <i data-lucide="brain-circuit"></i>
+                    <h3>Brilliance</h3>
+                    <p>Sharp, witty, and always two steps ahead. A truly inspiring mind.</p>
+                </div>
+                <div class="bento-item span-2">
+                    <i data-lucide="gem"></i>
+                    <h3>Irreplaceable</h3>
+                    <p>In a world of temporary trends, you are a timeless classic. Thank you for being authentically you.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Choices (The 3 Options) -->
+        <section>
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h2 style="font-family: var(--font-serif); font-size: 3.5rem;">Pick Your Wish</h2>
+                <p style="color: var(--text-dim);">Select a path to continue the celebration</p>
+            </div>
+
+            <div class="choice-container">
+                <!-- Option 1: The Spark -->
+                <button class="choice-btn" onclick="celebrateSpark()">
+                    <i data-lucide="zap" size="40"></i>
+                    <h3>The Spark</h3>
+                    <p>For a burst of pure, unadulterated joy.</p>
+                </button>
+
+                <!-- Option 2: The Heart -->
+                <button class="choice-btn" onclick="showHeartfelt()">
+                    <i data-lucide="mail" size="40"></i>
+                    <h3>The Letter</h3>
+                    <p>A personal note from my heart to yours.</p>
+                </button>
+
+                <!-- Option 3: The Future -->
+                <button class="choice-btn" onclick="celebrateFuture()">
+                    <i data-lucide="rocket" size="40"></i>
+                    <h3>The Future</h3>
+                    <p>A glimpse into the amazing year ahead.</p>
+                </button>
+            </div>
+        </section>
+
+        <footer style="padding: 100px 0; text-align: center; color: var(--text-dim);">
+            <p>Made for Nitisha &middot; 2025</p>
+        </footer>
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Custom Cursor Logic
+        const cursor = document.getElementById('cursor');
+        const follower = document.getElementById('cursor-follower');
+
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0 });
+            gsap.to(follower, { x: e.clientX - 10, y: e.clientY - 10, duration: 0.15 });
+        });
+
+        // Entrance Animation
+        function startExperience() {
+            gsap.to("#loader", { 
+                opacity: 0, 
+                duration: 1.5, 
+                ease: "power4.inOut",
+                onComplete: () => {
+                    document.getElementById('loader').style.display = 'none';
+                    runHeroAnim();
+                }
+            });
+        }
+
+        function runHeroAnim() {
+            gsap.to("#content", { opacity: 1, duration: 1 });
+            gsap.to("#main-title", { 
+                opacity: 1, 
+                y: -20, 
+                duration: 2, 
+                ease: "expo.out" 
+            });
+        }
+
+        // Scroll Trigger Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.from(".bento-item", {
+            scrollTrigger: {
+                trigger: ".bento-grid",
+                start: "top 80%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power3.out"
+        });
+
+        // Interactive Functions (The 3 Options)
+        function celebrateSpark() {
+            const end = Date.now() + 3 * 1000;
+            const colors = ['#E2C799', '#ffffff'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 2,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 2,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        function showHeartfelt() {
+            const overlay = document.getElementById('message-overlay');
+            const text = document.getElementById('modal-text');
+            text.innerHTML = "Nitisha, <br><br> You are more than a best friend; you are a constant in a world of variables. Your strength and kindness inspire me every single day. <br><br> May this birthday be as luminous as you are.";
+            overlay.style.display = 'flex';
+            gsap.from(".message-content", { scale: 0.8, opacity: 0, duration: 0.5 });
+        }
+
+        function celebrateFuture() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#E2C799', '#ffffff']
+            });
+            
+            const overlay = document.getElementById('message-overlay');
+            const text = document.getElementById('modal-text');
+            text.innerHTML = "Looking into 2025... <br><br> I see endless success, louder laughs, and even more incredible memories for you. The universe has big plans for you, Nitisha!";
+            overlay.style.display = 'flex';
+        }
+
+        // Cursor scaling on buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(cursor, { scale: 3, opacity: 0.2 });
+                gsap.to(follower, { scale: 1.5 });
+            });
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(cursor, { scale: 1, opacity: 1 });
+                gsap.to(follower, { scale: 1 });
+            });
+        });
+    </script>
+</body>
+</html>
